@@ -49,6 +49,61 @@ app.post('/cadastrar', async (req, res) => {
   }
 });
 
+// Rota para alterar e-mail
+app.post('/alteraremail', async (req, res) => {
+  const { email, newEmail } = req.body;
+
+  if (!email || !newEmail) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+  }
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Usuário não encontrado.' });
+    }
+
+    // Atualiza o e-mail
+    await user.update({
+      email: newEmail,
+    });
+
+    res.json({ message: 'E-mail alterado com sucesso!', user: { name: user.name, email: user.email } });
+  } catch (error) {
+    console.error('Erro ao alterar e-mail:', error);
+    res.status(500).json({ error: 'Erro ao alterar dados, tente novamente.' });
+  }
+});
+
+// Rota para alterar senha
+app.post('/alterarsenha', async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+  }
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Usuário não encontrado.' });
+    }
+
+    // Atualiza a senha
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await user.update({
+      password: hashedNewPassword
+    });
+
+    res.json({ message: 'Senha alterada com sucesso!', user: { name: user.name, email: user.email } });
+  } catch (error) {
+    console.error('Erro ao alterar senha:', error);
+    res.status(500).json({ error: 'Erro ao alterar dados, tente novamente.' });
+  }
+});
+
 // Rota de login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
